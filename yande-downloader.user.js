@@ -113,10 +113,21 @@
     return link ? link.href : null;
   }
 
+  function sanitizeFilename(name) {
+    // Strip characters forbidden on Windows / not allowed by File System Access API
+    name = name.replace(/[\\/:*?"<>|]/g, '_');
+    // Remove control characters and zero-width chars
+    name = name.replace(/[\x00-\x1f\x7f\u200b-\u200f\u2028-\u202f\ufeff]/g, '');
+    // Trim trailing dots and spaces (Windows cannot handle these)
+    name = name.replace(/[. ]+$/, '');
+    if (!name) return 'image_' + Date.now();
+    return name;
+  }
+
   function getFilename(imageUrl) {
     if (!imageUrl) return 'image_' + Date.now();
     const name = decodeURIComponent(imageUrl.split('/').pop().split('?')[0]);
-    return name || 'image_' + Date.now();
+    return sanitizeFilename(name) || 'image_' + Date.now();
   }
 
   function fetchImageBlob(url) {
